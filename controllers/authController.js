@@ -85,6 +85,7 @@ exports.forgot = async (req, resp) => {
     return resp.status(200).json({
       success: true,
       message: "successfully",
+      user:data
     });
   };
 exports.Verify = async (req, resp) => {
