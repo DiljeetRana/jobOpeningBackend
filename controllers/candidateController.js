@@ -15,10 +15,25 @@ const createCandidate = async (req, res) => {
     }
 };
 
+// const getCandidates = async (req, res) => {
+//     try {
+//         const { jobId, status, search } = req.query;
+//         let filters = {};
+//         if (jobId) filters.job = jobId;
+//         if (status) filters.status = status;
+//         if (search) filters.name = { $regex: search, $options: 'i' };
+
+//         const candidates = await Candidate.find(filters).populate('job');
+//         res.json(candidates);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 const getCandidates = async (req, res) => {
     try {
         const { jobId, status, search } = req.query;
-        let filters = {};
+        let filters = { flag: true }; // Ensure only active candidates are fetched
+
         if (jobId) filters.job = jobId;
         if (status) filters.status = status;
         if (search) filters.name = { $regex: search, $options: 'i' };
@@ -49,16 +64,40 @@ const updateCandidate = async (req, res) => {
     }
 };
 
+// const deleteCandidate = async (req, res) => {
+//     try {
+//         const candidate = await Candidate.findByIdAndDelete(req.params.id);
+//         await Job.findByIdAndUpdate(candidate.job, { $pull: { candidates: candidate._id } });
+//         res.json({ message: 'Candidate deleted successfully' });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+// Get all candidates by jobId
+
 const deleteCandidate = async (req, res) => {
     try {
-        const candidate = await Candidate.findByIdAndDelete(req.params.id);
+        // Find the candidate and update the flag instead of deleting
+        const candidate = await Candidate.findByIdAndUpdate(
+            req.params.id,
+            { flag: false }, // Set flag to false (soft delete)
+            { new: true } // Return updated document
+        );
+
+        if (!candidate) {
+            return res.status(404).json({ message: 'Candidate not found' });
+        }
+
+        // Remove candidate reference from the related Job
         await Job.findByIdAndUpdate(candidate.job, { $pull: { candidates: candidate._id } });
-        res.json({ message: 'Candidate deleted successfully' });
+
+        res.json({ message: 'Candidate flagged as deleted successfully', candidate });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-// Get all candidates by jobId
+
+
 const getCandidatesbyJobID= async (req, res) => {
     try {
         const { jobId } = req.params;

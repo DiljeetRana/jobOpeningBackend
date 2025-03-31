@@ -17,7 +17,7 @@ router.get('/candidate/getCandidates', authMiddleware, authorizeRoles('Admin', '
 router.get('/candidate/getCandidate/:id', authMiddleware, authorizeRoles('Admin', 'HR'), getCandidateById);
 router.get('/candidate/getCandidatesbyJobID/:id', authMiddleware, authorizeRoles('Admin', 'HR'), getCandidatesbyJobID);
 router.put('/candidate/updateCandidate/:id', authMiddleware, authorizeRoles('Admin', 'HR'), updateCandidate);
-router.delete('/candidate/deleteCandidate/:id', authMiddleware, authorizeRoles('Admin', 'HR'), deleteCandidate);
+router.put('/candidate/deleteCandidate/:id', authMiddleware, authorizeRoles('Admin', 'HR'), deleteCandidate);
 
 
 module.exports = router;

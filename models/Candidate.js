@@ -32,7 +32,8 @@ const CandidateSchema = new mongoose.Schema(
         },
 
         // Job reference
-        job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }
+        job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' },
+        flag: { type: Boolean, default: true },
     },
     { timestamps: true }
 );
