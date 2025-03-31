@@ -3,7 +3,7 @@ const Candidate = require("../models/Candidate");
 require('dotenv').config();
 
 const dbConnect = () => {
-    mongoose.connect("mongodb://localhost:27017/Job", {}).then((async() => {
+    mongoose.connect(process.env.MONGODB_URI, {}).then((async() => {
         console.log("Connected");
         // try {
         //     await Candidate.collection.dropIndex("email_1");

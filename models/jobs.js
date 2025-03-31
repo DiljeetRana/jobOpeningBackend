@@ -6,6 +6,7 @@ const JobSchema = new mongoose.Schema({
     location: { type: String, required: true },
     status: { type: String, enum: ['Open', 'Closed'], default: 'Open' },
     candidates: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Candidate' }],
+    postingDate: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Job', JobSchema);
