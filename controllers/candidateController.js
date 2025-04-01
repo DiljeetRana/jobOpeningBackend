@@ -81,10 +81,11 @@ const deleteCandidate = async (req, res) => {
 
 const getCandidatesbyJobID = async (req, res) => {
     try {
-        const { jobId } = req.params;
-
+        const { id } = req.params;
+        let filters = { flag: true };
+        console.log("hiiiiiiiii", id)
         // Fetch candidates with matching jobId
-        const candidates = await Candidate.find({ job: jobId });
+        const candidates = await Candidate.find({ job: id, filters });
 
         if (!candidates.length) {
             return res.status(404).json({ message: 'No candidates found for this job' });
