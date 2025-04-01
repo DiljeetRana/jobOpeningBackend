@@ -79,13 +79,32 @@ const deleteCandidate = async (req, res) => {
 };
 
 
+// const getCandidatesbyJobID = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         let filters = { flag: true };
+//         console.log("hiiiiiiiii", id)
+//         // Fetch candidates with matching jobId
+//         const candidates = await Candidate.find({ job: id, filters });
+
+//         if (!candidates.length) {
+//             return res.status(404).json({ message: 'No candidates found for this job' });
+//         }
+
+//         res.status(200).json(candidates);
+//     } catch (error) {
+//         res.status(500).json({ error: 'Internal Server Error', details: error.message });
+//     }
+// };
+
 const getCandidatesbyJobID = async (req, res) => {
     try {
         const { id } = req.params;
         let filters = { flag: true };
-        console.log("hiiiiiiiii", id)
-        // Fetch candidates with matching jobId
-        const candidates = await Candidate.find({ job: id, filters });
+        console.log("hiiiiiiiii", id);
+
+        // Corrected query
+        const candidates = await Candidate.find({ job: id, ...filters });
 
         if (!candidates.length) {
             return res.status(404).json({ message: 'No candidates found for this job' });
@@ -96,7 +115,6 @@ const getCandidatesbyJobID = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error', details: error.message });
     }
 };
-
 
 module.exports = {
     createCandidate,
