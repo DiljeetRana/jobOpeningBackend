@@ -4,7 +4,7 @@ const Job = require('../models/jobs');
 const createCandidate = async (req, res) => {
     try {
         const candidate = new Candidate(req.body);
-        console.log("candidate req body:::::",req.body)
+        console.log("candidate req body:::::", req.body)
         await candidate.save();
 
         await Job.findByIdAndUpdate(candidate.job, { $push: { candidates: candidate._id } });
@@ -15,29 +15,10 @@ const createCandidate = async (req, res) => {
     }
 };
 
-// const getCandidates = async (req, res) => {
-//     try {
-//         const { jobId, status, search } = req.query;
-//         let filters = {};
-//         if (jobId) filters.job = jobId;
-//         if (status) filters.status = status;
-//         if (search) filters.name = { $regex: search, $options: 'i' };
 
-//         const candidates = await Candidate.find(filters).populate('job');
-//         res.json(candidates);
-//     } catch (error) {
-//         res.status(500).json({ error: error.message });
-//     }
-// };
 const getCandidates = async (req, res) => {
     try {
-        const { jobId, status, search } = req.query;
         let filters = { flag: true }; // Ensure only active candidates are fetched
-
-        if (jobId) filters.job = jobId;
-        if (status) filters.status = status;
-        if (search) filters.name = { $regex: search, $options: 'i' };
-
         const candidates = await Candidate.find(filters).populate('job');
         res.json(candidates);
     } catch (error) {
@@ -98,7 +79,7 @@ const deleteCandidate = async (req, res) => {
 };
 
 
-const getCandidatesbyJobID= async (req, res) => {
+const getCandidatesbyJobID = async (req, res) => {
     try {
         const { jobId } = req.params;
 
