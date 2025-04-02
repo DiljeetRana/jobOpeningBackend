@@ -14,6 +14,10 @@ createJob = async (req, res) => {
 getJobs = async (req, res) => {
     try {
         const jobs = await Job.find().populate('candidates');
+        
+        if (!jobs.length) {
+            return res.status(200).json(jobs);
+        }
         res.json(jobs);
     } catch (error) {
         res.status(500).json({ error: error.message });
