@@ -107,7 +107,7 @@ const getCandidatesbyJobID = async (req, res) => {
         const candidates = await Candidate.find({ job: id, ...filters });
 
         if (!candidates.length) {
-            return res.status(200).json({ message: 'No candidates found for this job', status: 404 });
+            return res.status(200).json({ message: 'No candidates found for this job', status: 404 , candidates:candidates });
         }
 
         res.status(200).json(candidates);
