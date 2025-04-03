@@ -12,7 +12,7 @@ const dbConnect = require("./Connection/dbConnection");
 const app = express();
 
 const corsOptions = {
-  origin: "https://job-opening-frontend-cstg.vercel.app", // Allow frontend URL
+  origin: "https://job-opening-frontend.vercel.app", // Allow frontend URL
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
   credentials: true, // Allow cookies if needed
   allowedHeaders: "Content-Type, Authorization", // Allow necessary headers
