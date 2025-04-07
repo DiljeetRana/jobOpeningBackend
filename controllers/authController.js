@@ -33,7 +33,7 @@ exports.loginUser = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            return res.status(400).json({ error: "Invalid credentials." });
+            return res.status(400).json({ error: "Invalid credentials." , status:400 });
         }
         console.log(process.env.JWT_SECRET);
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
