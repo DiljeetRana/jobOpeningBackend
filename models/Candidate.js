@@ -27,9 +27,10 @@ const CandidateSchema = new mongoose.Schema(
         // Candidate overall status in the hiring process
         status: {
             type: String,
-            enum: ['Pending', 'Shortlisted', 'Rejected', 'Hired', 'Applied'],
+            enum: ['Contacted','Moved to Round 2',' Moved to Round 3','Final Round', 'Shortlisted', 'Rejected', 'Hired', 'On Hold'],
             default: 'Pending'
         },
+       
 
         // Job reference
         job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job' },
