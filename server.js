@@ -38,7 +38,7 @@ app.use('/api', protectedRoutes);
 
 dbConnect();
 // set port, listen for requests
-const PORT = process.env.PORT || 8085;
+const PORT = process.env.PORT || 8086;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
