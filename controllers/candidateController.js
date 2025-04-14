@@ -33,16 +33,16 @@ const createCandidate = async (req, res) => {
 const getCandidates = async (req, res) => {
     try {
         let filters = { flag: true }; // Ensure only active candidates are fetched
-        
+
         // Get all active candidates with job details
         const candidates = await Candidate.find(filters).populate('job');
-        
+
         // Count candidates with status 'hired'
         const hiredCount = await Candidate.countDocuments({
             ...filters,
             status: 'Hired'
         });
-        
+
         res.json({
             candidates,
             hiredCount
@@ -61,16 +61,35 @@ const getCandidateById = async (req, res) => {
     }
 };
 
+// const updateCandidate = async (req, res) => {
+//     try {
+//         const {id}=req.params;
+//         console.log("idtypeeeeeeeeeee",typeof(id));
+//         const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//         res.json(candidate);
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
+const mongoose = require('mongoose');
+
 const updateCandidate = async (req, res) => {
     try {
-        const {id}=req.params;
-        console.log("idtypeeeeeeeeeee",typeof(id));
-        const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { id } = req.params;
+        const updateData = { ...req.body };
+        console.log("idddddddd:::", typeof (id));
+        // Sanitize job field
+        if (updateData.job === "" || !mongoose.Types.ObjectId.isValid(updateData.job)) {
+            delete updateData.job; // Remove it if it's empty or invalid
+        }
+
+        const candidate = await Candidate.findByIdAndUpdate(id, updateData, { new: true });
         res.json(candidate);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 };
+
 
 // const deleteCandidate = async (req, res) => {
 //     try {
