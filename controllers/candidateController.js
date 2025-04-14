@@ -43,6 +43,8 @@ const getCandidateById = async (req, res) => {
 
 const updateCandidate = async (req, res) => {
     try {
+        const {id}=req.params;
+        console.log("idtypeeeeeeeeeee",typeof(id));
         const candidate = await Candidate.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(candidate);
     } catch (error) {
