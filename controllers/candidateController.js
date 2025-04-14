@@ -5,6 +5,11 @@ const createCandidate = async (req, res) => {
     try {
         const candidate = new Candidate(req.body);
         console.log("candidate req body:::::", req.body)
+        ['interviewStatus', 'status'].forEach(field => {
+            if (req.body[field] === "") {
+                delete req.body[field];
+            }
+        });
         await candidate.save();
 
         await Job.findByIdAndUpdate(candidate.job, { $push: { candidates: candidate._id } });
