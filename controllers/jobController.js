@@ -11,16 +11,36 @@ createJob = async (req, res) => {
     }
 };
 
+// getJobs = async (req, res) => {
+//     try {
+//         const jobs = await Job.find().populate('candidates');
+        
+//         if (!jobs.length) {
+//             return res.status(200).json(jobs);
+//         }
+//         res.json(jobs);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 getJobs = async (req, res) => {
     try {
-        const jobs = await Job.find().populate('candidates');
+        const [jobs, openJobs] = await Promise.all([
+            Job.find().populate('candidates'),
+            Job.find({ status: 'Open' })
+        ]);
         
-        if (!jobs.length) {
-            return res.status(200).json(jobs);
-        }
-        res.json(jobs);
+        res.status(200).json({
+            totalJobs: jobs.length,
+            openJobsCount: openJobs.length,
+            jobs
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ 
+            error: error.message,
+            totalJobs: 0,
+            openJobsCount: 0
+        });
     }
 };
 
