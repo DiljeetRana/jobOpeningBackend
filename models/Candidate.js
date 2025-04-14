@@ -28,7 +28,7 @@ const CandidateSchema = new mongoose.Schema(
         status: {
             type: String,
             enum: ['Contacted','Moved to Round 2',' Moved to Round 3','Final Round', 'Shortlisted', 'Rejected', 'Hired', 'On Hold'],
-            default: 'Pending'
+            default: 'On Hold'
         },
         comments:{
             type: String,
