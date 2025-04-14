@@ -10,16 +10,31 @@ const protectedRoutes = require('./Router/protectedRoutes');
 const dbConnect = require("./Connection/dbConnection");
 
 const app = express();
+const allowedOrigins = [
+  "https://job-opening-frontend.vercel.app", // Live frontend
+  "http://localhost:3000",                   // Local frontend
+];
+// const corsOptions = {
+//   // origin: "http://localhost:3000", // Allow frontend URL
+//   origin: "https://job-opening-frontend.vercel.app",
 
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
+//   credentials: true, // Allow cookies if needed
+//   allowedHeaders: "Content-Type, Authorization", // Allow necessary headers
+// };
 const corsOptions = {
-  // origin: "http://localhost:3000", // Allow frontend URL
-  origin: "https://job-opening-frontend.vercel.app",
-  
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Specify allowed methods
-  credentials: true, // Allow cookies if needed
-  allowedHeaders: "Content-Type, Authorization", // Allow necessary headers
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  allowedHeaders: "Content-Type, Authorization",
 };
-
 app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
@@ -36,7 +51,7 @@ app.get("/", (req, res) => {
 // app.use('/api/candidates', candidateRoutes);
 
 app.use('/api/auth', authRoutes);
-app.use('/api', protectedRoutes); 
+app.use('/api', protectedRoutes);
 
 dbConnect();
 // set port, listen for requests
