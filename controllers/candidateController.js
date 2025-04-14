@@ -21,16 +21,36 @@ const createCandidate = async (req, res) => {
 };
 
 
+// const getCandidates = async (req, res) => {
+//     try {
+//         let filters = { flag: true }; // Ensure only active candidates are fetched
+//         const candidates = await Candidate.find(filters).populate('job');
+//         res.json(candidates);
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 const getCandidates = async (req, res) => {
     try {
         let filters = { flag: true }; // Ensure only active candidates are fetched
+        
+        // Get all active candidates with job details
         const candidates = await Candidate.find(filters).populate('job');
-        res.json(candidates);
+        
+        // Count candidates with status 'hired'
+        const hiredCount = await Candidate.countDocuments({
+            ...filters,
+            status: 'Hired'
+        });
+        
+        res.json({
+            candidates,
+            hiredCount
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
 const getCandidateById = async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id).populate('job');
