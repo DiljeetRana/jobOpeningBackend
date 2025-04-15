@@ -20,16 +20,28 @@ const createCandidate = async (req, res) => {
     }
 };
 
-
 // const getCandidates = async (req, res) => {
 //     try {
 //         let filters = { flag: true }; // Ensure only active candidates are fetched
+
+//         // Get all active candidates with job details
 //         const candidates = await Candidate.find(filters).populate('job');
-//         res.json(candidates);
+
+//         // Count candidates with status 'hired'
+//         const hiredCount = await Candidate.countDocuments({
+//             ...filters,
+//             status: 'Hired'
+//         });
+
+//         res.json({
+//             candidates,
+//             hiredCount
+//         });
 //     } catch (error) {
 //         res.status(500).json({ error: error.message });
 //     }
 // };
+
 const getCandidates = async (req, res) => {
     try {
         let filters = { flag: true }; // Ensure only active candidates are fetched
@@ -43,14 +55,23 @@ const getCandidates = async (req, res) => {
             status: 'Hired'
         });
 
+        // Get candidates with interviewStatus = "Scheduled"
+        const scheduledCandidates = await Candidate.find({
+            ...filters,
+            interviewStatus: 'Scheduled'
+        }).populate('job');
+
         res.json({
             candidates,
-            hiredCount
+            hiredCount,
+            scheduledCandidates, // New field containing scheduled candidates
+            scheduledCount: scheduledCandidates.length // Count of scheduled candidates
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
+
 const getCandidateById = async (req, res) => {
     try {
         const candidate = await Candidate.findById(req.params.id).populate('job');
