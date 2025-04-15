@@ -60,11 +60,16 @@ const getCandidates = async (req, res) => {
             ...filters,
             interviewStatus: 'Scheduled'
         }).populate('job');
+        const hiredCandidates = await Candidate.find({
+            ...filters,
+            status: 'Hired'
+        }).populate('job');
 
         res.json({
             candidates,
             hiredCount,
             scheduledCandidates, // New field containing scheduled candidates
+            hiredCandidates,
             scheduledCount: scheduledCandidates.length // Count of scheduled candidates
         });
     } catch (error) {
