@@ -35,9 +35,10 @@ createJob = async (req, res) => {
 getJobs = async (req, res) => {
     try {
         const [jobs, openJobs] = await Promise.all([
-            Job.find().populate('candidates'),
-            Job.find({ status: 'Open' }).populate('candidates') // Added populate for consistency
-        ]).sort({ _id: -1 });
+            Job.find().populate('candidates').sort({ _id: -1 }),
+            Job.find({ status: 'Open' }).populate('candidates').sort({ _id: -1 })
+        ]);
+        
 
         res.status(200).json({
             totalJobs: jobs.length,
