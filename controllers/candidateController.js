@@ -47,7 +47,7 @@ const getCandidates = async (req, res) => {
         let filters = { flag: true }; // Ensure only active candidates are fetched
 
         // Get all active candidates with job details
-        const candidates = await Candidate.find(filters).populate('job');
+        const candidates = await Candidate.find(filters).populate('job').sort({ _id: -1 });
 
         // Count candidates with status 'hired'
         const hiredCount = await Candidate.countDocuments({
@@ -59,11 +59,11 @@ const getCandidates = async (req, res) => {
         const scheduledCandidates = await Candidate.find({
             ...filters,
             interviewStatus: 'Scheduled'
-        }).populate('job');
+        }).populate('job').sort({ _id: -1 });
         const hiredCandidates = await Candidate.find({
             ...filters,
             status: 'Hired'
-        }).populate('job');
+        }).populate('job').sort({ _id: -1 });
 
         res.json({
             candidates,
@@ -79,7 +79,7 @@ const getCandidates = async (req, res) => {
 
 const getCandidateById = async (req, res) => {
     try {
-        const candidate = await Candidate.findById(req.params.id).populate('job');
+        const candidate = await Candidate.findById(req.params.id).populate('job').sort({ _id: -1 });
         if (!candidate) return res.status(404).json({ message: 'Candidate not found' });
         res.json(candidate);
     } catch (error) {
@@ -176,7 +176,7 @@ const getCandidatesbyJobID = async (req, res) => {
         console.log("hiiiiiiiii", id);
 
         // Corrected query
-        const candidates = await Candidate.find({ job: id, ...filters });
+        const candidates = await Candidate.find({ job: id, ...filters }).sort({ _id: -1 });
 
         if (!candidates.length) {
             return res.status(200).json(candidates);

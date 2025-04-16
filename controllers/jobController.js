@@ -37,7 +37,7 @@ getJobs = async (req, res) => {
         const [jobs, openJobs] = await Promise.all([
             Job.find().populate('candidates'),
             Job.find({ status: 'Open' }).populate('candidates') // Added populate for consistency
-        ]);
+        ]).sort({ _id: -1 });
 
         res.status(200).json({
             totalJobs: jobs.length,
@@ -58,7 +58,7 @@ getJobs = async (req, res) => {
 
 getJobById = async (req, res) => {
     try {
-        const job = await Job.findById(req.params.id).populate('candidates');
+        const job = await Job.findById(req.params.id).populate('candidates').sort({ _id: -1 });
         if (!job) return res.status(404).json({ message: 'Job not found' });
         res.json(job);
     } catch (error) {
