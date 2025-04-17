@@ -44,10 +44,16 @@ const createCandidate = async (req, res) => {
 
 const getCandidates = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1; // Default to page 1
+        const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+        const skip = (page - 1) * limit;
         let filters = { flag: true }; // Ensure only active candidates are fetched
 
         // Get all active candidates with job details
-        const candidates = await Candidate.find(filters).populate('job').sort({ _id: -1 });
+        const candidates = await Candidate.find(filters).populate('job').sort({ _id: -1 }) .skip(skip)
+        .limit(limit);
+
+        const totalCandidates = await Candidate.countDocuments(filters);
 
         // Count candidates with status 'hired'
         const hiredCount = await Candidate.countDocuments({
@@ -70,7 +76,10 @@ const getCandidates = async (req, res) => {
             hiredCount,
             scheduledCandidates, // New field containing scheduled candidates
             hiredCandidates,
-            scheduledCount: scheduledCandidates.length // Count of scheduled candidates
+            scheduledCount: scheduledCandidates.length, // Count of scheduled candidates
+            totalCandidates,
+            currentPage: page,
+            totalPages: Math.ceil(totalCandidates / limit),
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
