@@ -42,49 +42,125 @@ const createCandidate = async (req, res) => {
 //     }
 // };
 
+// const getCandidates = async (req, res) => {
+//     try {
+//         const page = parseInt(req.query.page) || 1; // Default to page 1
+//         const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+//         const skip = (page - 1) * limit;
+//         let filters = { flag: true }; // Ensure only active candidates are fetched
+
+//         // Get all active candidates with job details
+//         const candidates = await Candidate.find(filters).populate('job').sort({ _id: -1 }) .skip(skip)
+//         .limit(limit);
+
+//         const totalCandidates = await Candidate.countDocuments(filters);
+
+//         // Count candidates with status 'hired'
+//         const hiredCount = await Candidate.countDocuments({
+//             ...filters,
+//             status: 'Hired'
+//         });
+
+//         // Get candidates with interviewStatus = "Scheduled"
+//         const scheduledCandidates = await Candidate.find({
+//             ...filters,
+//             interviewStatus: 'Scheduled'
+//         }).populate('job').sort({ _id: -1 });
+//         const hiredCandidates = await Candidate.find({
+//             ...filters,
+//             status: 'Hired'
+//         }).populate('job').sort({ _id: -1 });
+
+//         res.json({
+//             candidates,
+//             hiredCount,
+//             scheduledCandidates, // New field containing scheduled candidates
+//             hiredCandidates,
+//             scheduledCount: scheduledCandidates.length, // Count of scheduled candidates
+//             totalCandidates,
+//             currentPage: page,
+//             totalPages: Math.ceil(totalCandidates / limit),
+//         });
+//     } catch (error) {
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
 const getCandidates = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; // Default to page 1
-        const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
-        const skip = (page - 1) * limit;
-        let filters = { flag: true }; // Ensure only active candidates are fetched
-
-        // Get all active candidates with job details
-        const candidates = await Candidate.find(filters).populate('job').sort({ _id: -1 }) .skip(skip)
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+  
+      const searchQuery = req.query.searchQuery || "";
+      const statusFilter = req.query.statusFilter || "";
+      const interviewStatusFilter = req.query.interviewStatusFilter || "";
+  
+      let filters = { flag: true };
+  
+      // 🔍 Apply search filter (name, email, location)
+      if (searchQuery) {
+        const regex = new RegExp(searchQuery, 'i'); // Case-insensitive
+        filters.$or = [
+          { name: regex },
+          { email: regex },
+          { location: regex }
+        ];
+      }
+  
+      // ✅ Apply status filter
+      if (statusFilter) {
+        filters.status = statusFilter;
+      }
+  
+      // ✅ Apply interview status filter
+      if (interviewStatusFilter) {
+        filters.interviewStatus = interviewStatusFilter;
+      }
+  
+      // Fetch paginated candidates with job details
+      const candidates = await Candidate.find(filters)
+        .populate('job')
+        .sort({ _id: -1 })
+        .skip(skip)
         .limit(limit);
-
-        const totalCandidates = await Candidate.countDocuments(filters);
-
-        // Count candidates with status 'hired'
-        const hiredCount = await Candidate.countDocuments({
-            ...filters,
-            status: 'Hired'
-        });
-
-        // Get candidates with interviewStatus = "Scheduled"
-        const scheduledCandidates = await Candidate.find({
-            ...filters,
-            interviewStatus: 'Scheduled'
-        }).populate('job').sort({ _id: -1 });
-        const hiredCandidates = await Candidate.find({
-            ...filters,
-            status: 'Hired'
-        }).populate('job').sort({ _id: -1 });
-
-        res.json({
-            candidates,
-            hiredCount,
-            scheduledCandidates, // New field containing scheduled candidates
-            hiredCandidates,
-            scheduledCount: scheduledCandidates.length, // Count of scheduled candidates
-            totalCandidates,
-            currentPage: page,
-            totalPages: Math.ceil(totalCandidates / limit),
-        });
+  
+      // Get total count of filtered candidates (not all candidates)
+      const totalCandidates = await Candidate.countDocuments(filters);
+  
+      // Optional: If you're displaying these separately, adjust filters accordingly
+      const hiredCount = await Candidate.countDocuments({
+        flag: true,
+        status: 'Hired'
+      });
+  
+      const scheduledCandidates = await Candidate.find({
+        flag: true,
+        interviewStatus: 'Scheduled'
+      }).populate('job').sort({ _id: -1 });
+  
+      const hiredCandidates = await Candidate.find({
+        flag: true,
+        status: 'Hired'
+      }).populate('job').sort({ _id: -1 });
+  
+      res.json({
+        candidates,
+        hiredCount,
+        scheduledCandidates,
+        hiredCandidates,
+        scheduledCount: scheduledCandidates.length,
+        totalCandidates,
+        currentPage: page,
+        totalPages: Math.ceil(totalCandidates / limit),
+      });
+  
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      res.status(500).json({ error: error.message });
     }
-};
+  };
+  
+
 
 const getCandidateById = async (req, res) => {
     try {
