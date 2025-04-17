@@ -178,13 +178,16 @@ const getJobs = async (req, res) => {
         const sortCriteria = { [sortField]: sortOrder };
 
         // Fetch jobs with pagination and filtering
-        const [jobs, totalJobs] = await Promise.all([
+        const [jobs, totalJobs ,openJobs] = await Promise.all([
             Job.find(baseFilter)
                 .populate('candidates')
                 .sort(sortCriteria)
                 .skip(skip)
                 .limit(limit),
-            Job.countDocuments(baseFilter)
+            Job.countDocuments(baseFilter),
+            Job.find({ ...baseFilter, status: 'Open' })
+                .populate('candidates')
+                .sort(sortCriteria)
         ]);
 
         // Get open jobs count separately if needed
