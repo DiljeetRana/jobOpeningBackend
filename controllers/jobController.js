@@ -192,16 +192,17 @@ const getJobs = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            data: {
-                jobs,
-                currentPage: page,
-                totalPages: Math.ceil(totalJobs / limit),
-                totalJobs,
-                jobsPerPage: limit,
-                openJobsCount,
-                closedJobsCount: totalJobs - openJobsCount
+            totalJobs: jobs.length,
+            openJobsCount: openJobs.length,
+            jobs, // All jobs
+            openJobs, // Array of open jobs with full details
+            currentPage: page,
+            totalPages: Math.ceil(totalJobs / limit),
+            totalJobs,
+            jobsPerPage: limit,
+            openJobsCount,
+            closedJobsCount: totalJobs - openJobsCount
 
-            }
         });
 
     } catch (error) {
