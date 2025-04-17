@@ -88,78 +88,90 @@ const createCandidate = async (req, res) => {
 
 const getCandidates = async (req, res) => {
     try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const skip = (page - 1) * limit;
-  
-      const searchQuery = req.query.searchQuery || "";
-      const statusFilter = req.query.statusFilter || "";
-      const interviewStatusFilter = req.query.interviewStatusFilter || "";
-  
-      let filters = { flag: true };
-  
-      // 🔍 Apply search filter (name, email, location)
-      if (searchQuery) {
-        const regex = new RegExp(searchQuery, 'i'); // Case-insensitive
-        filters.$or = [
-          { name: regex },
-          { email: regex },
-          { location: regex }
-        ];
-      }
-  
-      // ✅ Apply status filter
-      if (statusFilter) {
-        filters.status = statusFilter;
-      }
-  
-      // ✅ Apply interview status filter
-      if (interviewStatusFilter) {
-        filters.interviewStatus = interviewStatusFilter;
-      }
-  
-      // Fetch paginated candidates with job details
-      const candidates = await Candidate.find(filters)
-        .populate('job')
-        .sort({ _id: -1 })
-        .skip(skip)
-        .limit(limit);
-  
-      // Get total count of filtered candidates (not all candidates)
-      const totalCandidates = await Candidate.countDocuments(filters);
-  
-      // Optional: If you're displaying these separately, adjust filters accordingly
-      const hiredCount = await Candidate.countDocuments({
-        flag: true,
-        status: 'Hired'
-      });
-  
-      const scheduledCandidates = await Candidate.find({
-        flag: true,
-        interviewStatus: 'Scheduled'
-      }).populate('job').sort({ _id: -1 });
-  
-      const hiredCandidates = await Candidate.find({
-        flag: true,
-        status: 'Hired'
-      }).populate('job').sort({ _id: -1 });
-  
-      res.json({
-        candidates,
-        hiredCount,
-        scheduledCandidates,
-        hiredCandidates,
-        scheduledCount: scheduledCandidates.length,
-        totalCandidates,
-        currentPage: page,
-        totalPages: Math.ceil(totalCandidates / limit),
-      });
-  
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const searchQuery = req.query.searchQuery?.trim() || "";
+        const statusFilter = req.query.statusFilter?.trim() || "";
+        const interviewStatusFilter = req.query.interviewStatusFilter?.trim() || "";
+
+        let filters = { flag: true };
+
+        // 🔍 Search across all candidates (not just current page)
+        if (searchQuery) {
+            const regex = new RegExp(searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'i');
+            filters.$or = [
+                { name: regex },
+                { email: regex },
+                { location: regex },
+                { 'job.title': regex }, // Search in job title if populated
+                // Add other searchable fields
+            ];
+        }
+
+        // ✅ Status filter
+        if (statusFilter && statusFilter !== "All") {
+            filters.status = statusFilter;
+        }
+
+        // ✅ Interview status filter
+        if (interviewStatusFilter && interviewStatusFilter !== "All") {
+            filters.interviewStatus = interviewStatusFilter;
+        }
+
+        // Get paginated results (but filters apply to entire database)
+        const candidates = await Candidate.find(filters)
+            .populate('job')
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // Get total count across ALL matching candidates (not just current page)
+        const totalCandidates = await Candidate.countDocuments(filters);
+
+        // Get counts for different statuses (across all matching candidates)
+        const hiredCount = await Candidate.countDocuments({ 
+            ...filters, 
+            status: 'Hired' 
+        });
+        
+        const scheduledCount = await Candidate.countDocuments({ 
+            ...filters,
+            interviewStatus: 'Scheduled' 
+        });
+
+        res.json({
+            // success: true,
+            // candidates,
+            // counts: {
+            //     total: totalCandidates,
+            //     hired: hiredCount,
+            //     scheduled: scheduledCount,
+            // },
+            // pagination: {
+            //     currentPage: page,
+            //     totalPages: Math.ceil(totalCandidates / limit),
+            //     itemsPerPage: limit,
+            //     totalItems: totalCandidates
+            // }
+            candidates,
+            hiredCount,
+            scheduledCount,
+            totalCandidates,
+            currentPage: page,
+            totalPages: Math.ceil(totalCandidates / limit),
+        });
+
     } catch (error) {
-      res.status(500).json({ error: error.message });
+        console.error('Error in getCandidates:', error);
+        res.status(500).json({ 
+            success: false,
+            error: error.message 
+        });
     }
-  };
-  
+};
+
 
 
 const getCandidateById = async (req, res) => {
