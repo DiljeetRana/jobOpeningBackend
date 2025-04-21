@@ -143,6 +143,81 @@ createJob = async (req, res) => {
 //     }
 // };
 
+// const getJobs = async (req, res) => {
+//     try {
+//         // Extract query parameters with defaults
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+//         const skip = (page - 1) * limit;
+
+//         const statusFilter = req.query.status?.trim() || '';
+//         const searchQuery = req.query.search?.trim() || '';
+//         const sortField = req.query.sortBy || 'postingDate';
+//         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+//         // Base filter - only non-deleted jobs
+//         const baseFilter = { isDeleted: { $ne: true } };
+
+//         // Status filter
+//         if (statusFilter && statusFilter.toLowerCase() !== 'all') {
+//             baseFilter.status = statusFilter;
+//         }
+
+//         // Search filter (case-insensitive)
+//         if (searchQuery) {
+//             const regex = new RegExp(searchQuery, 'i');
+//             baseFilter.$or = [
+//                 { title: regex },
+//                 { description: regex },
+//                 { location: regex },
+//                 { 'skillsRequired': regex }
+//             ];
+//         }
+
+//         // Sorting
+//         const sortCriteria = { [sortField]: sortOrder };
+
+//         // Fetch jobs with pagination and filtering
+//         const [jobs, totalJobs ,openJobs] = await Promise.all([
+//             Job.find(baseFilter)
+//                 .populate('candidates')
+//                 .sort(sortCriteria)
+//                 .skip(skip)
+//                 .limit(limit),
+//             Job.countDocuments(baseFilter),
+//             Job.find({ ...baseFilter, status: 'Open' })
+//                 .populate('candidates')
+//                 .sort(sortCriteria)
+//         ]);
+
+//         // Get open jobs count separately if needed
+//         const openJobsCount = await Job.countDocuments({ ...baseFilter, status: 'Open' });
+
+//         res.status(200).json({
+//             success: true,
+//             totalJobs: jobs.length,
+//             openJobsCount: openJobs.length,
+//             jobs, // All jobs
+//             openJobs, // Array of open jobs with full details
+//             currentPage: page,
+//             totalPages: Math.ceil(totalJobs / limit),
+//             totalJobs,
+//             jobsPerPage: limit,
+//             openJobsCount,
+//             closedJobsCount: totalJobs - openJobsCount
+
+//         });
+
+//     } catch (error) {
+//         console.error('Error fetching jobs:', error);
+//         res.status(500).json({
+//             success: false,
+//             error: 'Failed to fetch jobs',
+//             message: error.message
+//         });
+//     }
+// };
+
 const getJobs = async (req, res) => {
     try {
         // Extract query parameters with defaults
@@ -150,11 +225,11 @@ const getJobs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const statusFilter = req.query.status?.trim() || '';
-        const searchQuery = req.query.search?.trim() || '';
+        const statusFilter = req.query.statusFilter?.trim() || '';
+        const searchQuery = req.query.searchQuery?.trim() || '';
         const sortField = req.query.sortBy || 'postingDate';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-
+        console.log("Search Query:", searchQuery);
         // Base filter - only non-deleted jobs
         const baseFilter = { isDeleted: { $ne: true } };
 
@@ -163,49 +238,39 @@ const getJobs = async (req, res) => {
             baseFilter.status = statusFilter;
         }
 
-        // Search filter (case-insensitive)
+        // Search only on title field (case-insensitive)
         if (searchQuery) {
-            const regex = new RegExp(searchQuery, 'i');
-            baseFilter.$or = [
-                { title: regex },
-                { description: regex },
-                { location: regex },
-                { 'skillsRequired': regex }
-            ];
+            // Escape special regex characters to prevent errors
+            const escapedQuery = searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            baseFilter.title = { 
+                $regex: escapedQuery, 
+                $options: 'i'  // 'i' for case-insensitive
+            };
         }
 
         // Sorting
         const sortCriteria = { [sortField]: sortOrder };
 
         // Fetch jobs with pagination and filtering
-        const [jobs, totalJobs ,openJobs] = await Promise.all([
+        const [jobs, totalJobs, openJobsCount] = await Promise.all([
             Job.find(baseFilter)
                 .populate('candidates')
                 .sort(sortCriteria)
                 .skip(skip)
                 .limit(limit),
             Job.countDocuments(baseFilter),
-            Job.find({ ...baseFilter, status: 'Open' })
-                .populate('candidates')
-                .sort(sortCriteria)
+            Job.countDocuments({ ...baseFilter, status: 'Open' })
         ]);
-
-        // Get open jobs count separately if needed
-        const openJobsCount = await Job.countDocuments({ ...baseFilter, status: 'Open' });
 
         res.status(200).json({
             success: true,
-            totalJobs: jobs.length,
-            openJobsCount: openJobs.length,
-            jobs, // All jobs
-            openJobs, // Array of open jobs with full details
+            jobs,
             currentPage: page,
             totalPages: Math.ceil(totalJobs / limit),
             totalJobs,
-            jobsPerPage: limit,
             openJobsCount,
-            closedJobsCount: totalJobs - openJobsCount
-
+            closedJobsCount: totalJobs - openJobsCount,
+            jobsPerPage: limit
         });
 
     } catch (error) {
