@@ -62,7 +62,12 @@ const getCandidates = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
-            const hiredCandidates = await Candidate.find( { ...filters, status: 'Hired' })
+        const hiredCandidates = await Candidate.find({ ...filters, status: 'Hired' })
+            .populate('job')
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+        const ScheduledCandidates = await Candidate.find({ ...filters, interviewStatus: 'Scheduled' })
             .populate('job')
             .sort({ _id: -1 })
             .skip(skip)
@@ -72,14 +77,14 @@ const getCandidates = async (req, res) => {
         const totalCandidates = await Candidate.countDocuments(filters);
 
         // Get counts for different statuses (across all matching candidates)
-        const hiredCount = await Candidate.countDocuments({ 
-            ...filters, 
-            status: 'Hired' 
-        });
-        
-        const scheduledCount = await Candidate.countDocuments({ 
+        const hiredCount = await Candidate.countDocuments({
             ...filters,
-            interviewStatus: 'Scheduled' 
+            status: 'Hired'
+        });
+
+        const scheduledCount = await Candidate.countDocuments({
+            ...filters,
+            interviewStatus: 'Scheduled'
         });
 
         res.json({
@@ -102,14 +107,15 @@ const getCandidates = async (req, res) => {
             totalCandidates,
             currentPage: page,
             totalPages: Math.ceil(totalCandidates / limit),
-            hiredCandidates
+            hiredCandidates,
+            ScheduledCandidates
         });
 
     } catch (error) {
         console.error('Error in getCandidates:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            error: error.message 
+            error: error.message
         });
     }
 };
