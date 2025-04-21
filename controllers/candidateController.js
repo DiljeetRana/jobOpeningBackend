@@ -62,6 +62,12 @@ const getCandidates = async (req, res) => {
             .skip(skip)
             .limit(limit);
 
+            const hiredCandidates = await Candidate.find( { ...filters, status: 'Hired' })
+            .populate('job')
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
+
         // Get total count across ALL matching candidates (not just current page)
         const totalCandidates = await Candidate.countDocuments(filters);
 
@@ -96,6 +102,7 @@ const getCandidates = async (req, res) => {
             totalCandidates,
             currentPage: page,
             totalPages: Math.ceil(totalCandidates / limit),
+            hiredCandidates
         });
 
     } catch (error) {

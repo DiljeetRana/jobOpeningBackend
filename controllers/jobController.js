@@ -255,14 +255,15 @@ const getJobs = async (req, res) => {
         const sortCriteria = { [sortField]: sortOrder };
 
         // Fetch jobs with pagination and filtering
-        const [jobs, totalJobs, openJobsCount] = await Promise.all([
+        const [jobs, totalJobs, openJobsCount,openJobs] = await Promise.all([
             Job.find(baseFilter)
                 .populate('candidates')
                 .sort(sortCriteria)
                 .skip(skip)
                 .limit(limit),
             Job.countDocuments(baseFilter),
-            Job.countDocuments({ ...baseFilter, status: 'Open' })
+            Job.countDocuments({ ...baseFilter, status: 'Open' }),
+            Job.find({ status: 'Open' }).populate('candidates').sort({ _id: -1 })
         ]);
 
         res.status(200).json({
@@ -273,7 +274,8 @@ const getJobs = async (req, res) => {
             totalJobs,
             openJobsCount,
             closedJobsCount: totalJobs - openJobsCount,
-            jobsPerPage: limit
+            jobsPerPage: limit,
+            openJobs
         });
 
     } catch (error) {
