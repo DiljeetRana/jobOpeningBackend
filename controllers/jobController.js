@@ -235,15 +235,18 @@ const getJobs = async (req, res) => {
 
         // Status filter
         if (statusFilter && statusFilter.toLowerCase() !== 'all') {
-            baseFilter.status = statusFilter;
+            baseFilter.status = {
+                $regex: `^${statusFilter}$`,
+                $options: 'i'
+            };
         }
 
         // Search only on title field (case-insensitive)
         if (searchQuery) {
             // Escape special regex characters to prevent errors
             const escapedQuery = searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-            baseFilter.title = { 
-                $regex: escapedQuery, 
+            baseFilter.title = {
+                $regex: escapedQuery,
                 $options: 'i'  // 'i' for case-insensitive
             };
         }
