@@ -225,14 +225,14 @@ const getJobs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const statusFilter = req.query.statusFilter?.trim() || '';
+        const statusFilter = req.query.status?.trim() || '';
         const searchQuery = req.query.searchQuery?.trim() || '';
         const sortField = req.query.sortBy || 'postingDate';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
         console.log("Search Query:", searchQuery);
         // Base filter - only non-deleted jobs
         const baseFilter = { isDeleted: { $ne: true } };
-
+        console.log("statusFilterstatusFilterstatusFilter::", statusFilter);
         // Status filter
         if (statusFilter && statusFilter.toLowerCase() !== 'all') {
             baseFilter.status = {
@@ -255,7 +255,7 @@ const getJobs = async (req, res) => {
         const sortCriteria = { [sortField]: sortOrder };
 
         // Fetch jobs with pagination and filtering
-        const [jobs, totalJobs, openJobsCount,openJobs] = await Promise.all([
+        const [jobs, totalJobs, openJobsCount, openJobs] = await Promise.all([
             Job.find(baseFilter)
                 .populate('candidates')
                 .sort(sortCriteria)
