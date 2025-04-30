@@ -225,7 +225,7 @@ const getJobs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const statusFilter = req.query.status?.trim() || '';
+        const statusFilter = req.query.statusFilter?.trim() || '';
         const searchQuery = req.query.searchQuery?.trim() || '';
         const sortField = req.query.sortBy || 'postingDate';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
