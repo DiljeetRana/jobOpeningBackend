@@ -156,6 +156,7 @@ const getCandidates = async (req, res) => {
 
     const searchQuery = req.query.searchQuery?.trim() || "";
     const statusFilter = req.query.statusFilter?.trim() || "";
+    console.log("statusFilterstatusFilter:::", statusFilter);
     const interviewStatusFilter = req.query.interviewStatusFilter?.trim() || "";
 
     let filters = { flag: true };
@@ -174,6 +175,8 @@ const getCandidates = async (req, res) => {
     let candidates = await Candidate.find(filters)
       .populate("job")
       .sort({ _id: -1 });
+    candidates = candidates.filter(candidate => candidate.job && candidate.job.title);
+
 
     if (searchQuery) {
       const escapedSearchQuery = searchQuery.replace(
