@@ -241,55 +241,12 @@ const getCandidates = async (req, res) => {
 
 const getCandidateById = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
 
-    const searchQuery = req.query.searchQuery?.trim() || "";
-    const statusFilter = req.query.statusFilter?.trim() || "";
-    console.log("statusFilterstatusFilter:::", statusFilter);
-    const interviewStatusFilter = req.query.interviewStatusFilter?.trim() || "";
 
-    let filters = { flag: true };
-
-    // ✅ Status filter
-    if (statusFilter && statusFilter !== "All") {
-      filters.status = statusFilter;
-    }
-
-    // ✅ Interview status filter
-    if (interviewStatusFilter && interviewStatusFilter !== "All") {
-      filters.interviewStatus = interviewStatusFilter;
-    }
-
-    const candidates = await Candidate.findById(req.params.id)
+    const candidate = await Candidate.findById(req.params.id)
       .populate("job")
       .sort({ _id: -1 });
-    candidates = candidates.filter(candidate => candidate.job && candidate.job.title);
 
-
-    if (searchQuery) {
-      const escapedSearchQuery = searchQuery.replace(
-        /[-\/\\^$*+?.()|[\]{}]/g,
-        "\\$&"
-      );
-      const regex = new RegExp(escapedSearchQuery, "i");
-      candidates = candidates.filter((candidate) => {
-        const jobTitle = candidate.job?.title || "";
-        const candidateName = candidate.name || "";
-        const candidateEmail = candidate.email || "";
-        const candidateLocation = candidate.location || "";
-
-        return (
-          regex.test(candidateName) ||
-          regex.test(candidateEmail) ||
-          regex.test(candidateLocation) ||
-          regex.test(jobTitle)
-        );
-      });
-    }
-    const paginatedCandidates = candidates.slice(skip, skip + limit);
-    console.log("paginatedCandidates:::", paginatedCandidates);
     if (!candidate)
       return res.status(404).json({ message: "Candidate not found" });
     res.json(candidate);
