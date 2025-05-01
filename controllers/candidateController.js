@@ -241,9 +241,55 @@ const getCandidates = async (req, res) => {
 
 const getCandidateById = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id)
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const searchQuery = req.query.searchQuery?.trim() || "";
+    const statusFilter = req.query.statusFilter?.trim() || "";
+    console.log("statusFilterstatusFilter:::", statusFilter);
+    const interviewStatusFilter = req.query.interviewStatusFilter?.trim() || "";
+
+    let filters = { flag: true };
+
+    // ✅ Status filter
+    if (statusFilter && statusFilter !== "All") {
+      filters.status = statusFilter;
+    }
+
+    // ✅ Interview status filter
+    if (interviewStatusFilter && interviewStatusFilter !== "All") {
+      filters.interviewStatus = interviewStatusFilter;
+    }
+
+    const candidates = await Candidate.findById(req.params.id)
       .populate("job")
       .sort({ _id: -1 });
+    candidates = candidates.filter(candidate => candidate.job && candidate.job.title);
+
+
+    if (searchQuery) {
+      const escapedSearchQuery = searchQuery.replace(
+        /[-\/\\^$*+?.()|[\]{}]/g,
+        "\\$&"
+      );
+      const regex = new RegExp(escapedSearchQuery, "i");
+      candidates = candidates.filter((candidate) => {
+        const jobTitle = candidate.job?.title || "";
+        const candidateName = candidate.name || "";
+        const candidateEmail = candidate.email || "";
+        const candidateLocation = candidate.location || "";
+
+        return (
+          regex.test(candidateName) ||
+          regex.test(candidateEmail) ||
+          regex.test(candidateLocation) ||
+          regex.test(jobTitle)
+        );
+      });
+    }
+    const paginatedCandidates = candidates.slice(skip, skip + limit);
+    console.log("paginatedCandidates:::", paginatedCandidates);
     if (!candidate)
       return res.status(404).json({ message: "Candidate not found" });
     res.json(candidate);
@@ -325,45 +371,90 @@ const deleteCandidate = async (req, res) => {
 };
 
 // const getCandidatesbyJobID = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         let filters = { flag: true };
-//         console.log("hiiiiiiiii", id)
-//         // Fetch candidates with matching jobId
-//         const candidates = await Candidate.find({ job: id, filters });
+//   try {
+//     const { id } = req.params;
+//     let filters = { flag: true };
+//     console.log("hiiiiiiiii", id);
 
-//         if (!candidates.length) {
-//             return res.status(404).json({ message: 'No candidates found for this job' });
-//         }
+//     // Corrected query
+//     const candidates = await Candidate.find({ job: id, ...filters }).sort({
+//       _id: -1,
+//     });
 
-//         res.status(200).json(candidates);
-//     } catch (error) {
-//         res.status(500).json({ error: 'Internal Server Error', details: error.message });
+//     if (!candidates.length) {
+//       return res.status(200).json(candidates);
 //     }
+
+//     res.status(200).json(candidates);
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ error: "Internal Server Error", details: error.message });
+//   }
 // };
 
 const getCandidatesbyJobID = async (req, res) => {
   try {
-    const { id } = req.params;
-    let filters = { flag: true };
-    console.log("hiiiiiiiii", id);
+    const { id } = req.params; // job ID
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    // Corrected query
-    const candidates = await Candidate.find({ job: id, ...filters }).sort({
-      _id: -1,
-    });
+    const searchQuery = req.query.searchQuery?.trim() || "";
+    const statusFilter = req.query.statusFilter?.trim() || "";
+    const interviewStatusFilter = req.query.interviewStatusFilter?.trim() || "";
 
-    if (!candidates.length) {
-      return res.status(200).json(candidates);
+    // Base filters
+    let filters = {
+      job: id,
+      flag: true,
+    };
+
+    if (statusFilter && statusFilter !== "All") {
+      filters.status = statusFilter;
     }
 
-    res.status(200).json(candidates);
+    if (interviewStatusFilter && interviewStatusFilter !== "All") {
+      filters.interviewStatus = interviewStatusFilter;
+    }
+
+    // Search filters
+    if (searchQuery) {
+      const escapedSearch = searchQuery.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+      const regex = new RegExp(escapedSearch, "i");
+
+      filters.$or = [
+        { name: regex },
+        { email: regex },
+        { location: regex }
+      ];
+    }
+
+    // Get filtered candidates
+    const candidates = await Candidate.find(filters)
+      .populate("job")
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const totalCount = await Candidate.countDocuments(filters);
+
+    res.status(200).json({
+      data: candidates,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / limit),
+      totalCount,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: error.message });
+    console.error("Error in getCandidatesByJobID:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: error.message,
+    });
   }
 };
+
 
 module.exports = {
   createCandidate,
