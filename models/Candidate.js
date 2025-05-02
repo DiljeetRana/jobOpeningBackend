@@ -20,17 +20,17 @@ const CandidateSchema = new mongoose.Schema(
         // Interview status
         interviewStatus: {
             type: String,
-            enum: ['Scheduled','Offered', 'Accepted', 'Missed', 'Interviewed', 'Rescheduled'],
+            enum: ['All', 'Scheduled', 'Offered', 'Accepted', 'Missed', 'Interviewed', 'Rescheduled'],
             default: 'Offered'
         },
 
         // Candidate overall status in the hiring process
         status: {
             type: String,
-            enum: ['Contacted','Moved to Round 2',' Moved to Round 3','Final Round', 'Shortlisted', 'Rejected', 'Hired', 'On Hold'],
+            enum: ['All', 'Contacted', 'Moved to Round 2', ' Moved to Round 3', 'Final Round', 'Shortlisted', 'Rejected', 'Hired', 'On Hold'],
             default: 'Contacted'
         },
-        comments:{
+        comments: {
             type: String,
         },
 
