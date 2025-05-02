@@ -7,7 +7,7 @@ const CandidateSchema = new mongoose.Schema(
         location: { type: String, required: true },
 
         // Interview time slot (20-minute intervals) assigned by HR
-        interviewSlot: { type: String }, // e.g., "10:00AM - 10:20AM"
+        timeOffered: { type: String }, // e.g., "10:00AM - 10:20AM"
 
         // Interview schedule (date of interview)
         interviewSchedule: { type: Date },
