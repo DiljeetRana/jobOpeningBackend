@@ -265,13 +265,10 @@ const getJobs = async (req, res) => {
             Job.countDocuments({ ...baseFilter, status: 'Open' }),
             Job.find({ status: 'Open' }).populate('candidates').sort({ _id: -1 })
         ]);
-        const jobsWithCandidateCount = jobs.map(job => ({
-            ...job,
-            totalCandidates: job.candidates?.length || 0
-        }));
+       
         res.status(200).json({
             success: true,
-            jobs: jobsWithCandidateCount,
+            jobs,
             currentPage: page,
             totalPages: Math.ceil(totalJobs / limit),
             totalJobs,
