@@ -258,7 +258,7 @@ const getJobs = async (req, res) => {
         const [jobs, totalJobs, openJobsCount, openJobs] = await Promise.all([
             Job.find(baseFilter)
                 .populate('candidates')
-                .sort(sortCriteria)
+                .sort({ _id: -1 })
                 .skip(skip)
                 .limit(limit),
             Job.countDocuments(baseFilter),
