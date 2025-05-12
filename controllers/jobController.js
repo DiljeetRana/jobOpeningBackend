@@ -265,7 +265,7 @@ const getJobs = async (req, res) => {
             Job.countDocuments({ ...baseFilter, status: 'Open' }),
             Job.find({ status: 'Open' }).populate('candidates').sort({ _id: -1 })
         ]);
-       
+
         res.status(200).json({
             success: true,
             jobs,
@@ -277,7 +277,7 @@ const getJobs = async (req, res) => {
             jobsPerPage: limit,
             openJobs
         });
-        
+
         // res.status(200).json({
         //     success: true,
         //     jobs,
